@@ -24,19 +24,18 @@ class Model:
         for rifugio in self.DAO.read_rifugio():
             self._rifugi_dict[rifugio.id] = rifugio.nome
             self._rifugi_dict_localita[rifugio.id] = rifugio.localita
-        print(self._rifugi_dict)
+        #print(self._rifugi_dict)
 
         #print(self.DAO.read_connessioni(year))
         for connessione in self.DAO.read_connessioni(year):
-            self.G.add_edge(connessione.id_rifugio1, connessione.id_rifugio2, weight = float(connessione.distanza) * connessione.difficolta)
+            self.G.add_edge(connessione.id_rifugio1, connessione.id_rifugio2, weight = round(float(connessione.distanza) * connessione.difficolta, 3))
             if connessione.id_rifugio1 not in self.lista_rifugi:
                 self.lista_rifugi.append(connessione.id_rifugio1)
             if connessione.id_rifugio2 not in self.lista_rifugi:
                 self.lista_rifugi.append(connessione.id_rifugio2)
 
         self.G.add_nodes_from(self.lista_rifugi)
-        print(self.DAO.read_connessioni(year))
-        print(self.G)
+
 
 
     def get_edges_weight_min_max(self):
@@ -117,10 +116,26 @@ class Model:
         return best
 
 
+    def get_cammino_minimo_metodi(self, soglia : int):
+        G_filtrato = nx.Graph()
+        for u,v, data in self.G.edges(data = True):
+            if data["weight"] > soglia:
+                G_filtrato.add_edge(u,v, weight = data["weight"])
 
+        nodi = list(G_filtrato.nodes())
+        percorso_minimo = None
+        peso_minimo = float("inf")
+        for i in range(0, len(nodi)):
+            for j in range(i+1, len(nodi)):
+                start = nodi[i]
+                target = nodi[j]
+                try:
+                    percorso = nx.shortest_path(G_filtrato, start, target,weight = "weight")
+                    peso = nx.shortest_path_length(G_filtrato, start, target, weight="weight")
+                    if len(percorso) > 2 and peso < peso_minimo:
+                        percorso_minimo = percorso[:]
+                        peso_minimo = peso
+                except nx.NetworkXNoPath:
+                    continue
 
-
-
-
-
-
+        return percorso_minimo

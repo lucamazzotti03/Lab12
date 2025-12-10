@@ -56,7 +56,8 @@ class Controller:
             self._view.show_alert("Inserisci una soglia valida.")
             return
 
-        percorso = self._model.get_cammino_minimo_ricorsivo(soglia)
+        #percorso = self._model.get_cammino_minimo_ricorsivo(soglia)
+        percorso = self._model.get_cammino_minimo_metodi(soglia)
 
         if not percorso or len(percorso) < 2:
             self._view.show_alert("Nessun cammino valido trovato.")
